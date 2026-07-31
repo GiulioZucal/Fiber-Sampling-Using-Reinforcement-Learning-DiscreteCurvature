@@ -1,18 +1,7 @@
-## Fiber-Sampling-Using-Reinforcement-Learning
+## Fiber-Sampling-Using-Reinforcement-Learning for sampling Joint Degree matrices with fixed Forman-Ricci curvature and degree sequence
 
-The code in this repo is for the paper: "Learning to sample fibers for goodness-of-fit testing". (https://arxiv.org/abs/2405.13950)
-
-We consider the problem of constructing exact goodness-of-fit tests for discrete exponential family models. This classical problem remains practically unsolved for many types of structured or sparse data, as it rests on a computationally difficult core task: to produce a reliable sample from lattice points in a high-dimensional polytope. We translate the problem into a Markov decision process and demonstrate a reinforcement learning approach for learning `good moves' for sampling. We illustrate the approach on data sets and models for which traditional MCMC samplers converge too slowly due to problem size, sparsity structure, and the requirement to use prohibitive non-linear algebra computations in the process. The differentiating factor is the use of scalable tools from \emph{linear} algebra in the context of theoretical guarantees provided by \emph{non-linear} algebra. Our algorithm is based on an actor-critic sampling scheme, with provable convergence.
-The discovered moves can be used to efficiently obtain an exchangeable sample, significantly cutting computational times with regards to statistical testing.
-
-
-One of the examples we consider is the coauthorship dataset. This dataset is given in the form a graph where each node is an author and there exists an edge between two nodes if the two corresponding authors worked on a paper together. We are interested in verifying whether the data follows the beta model.
-
-
-<p float="left">
-  <img src="images/Rplot-Coauthor-NextComponent.png" width="45%" />
-  <img src="images/ChiSquare_Node_23.png" width="45%" />
-</p>
+The code in this repo is for the paper: "Markov and lattice bases for Forman-Ricci curvature of graphs" (https://arxiv.org/...................)
+and it is based on the code for the paper "Learning to sample fibers for goodness-of-fit testing". (https://arxiv.org/abs/2405.13950)
 
 ---
 
@@ -26,7 +15,9 @@ GaussianAC/
 ├── helper_functions.py # Helper functions for the data preparation.
 ├── reward_functions.py # Different reward functions.
 ├── stats_functions.py # Functions for processing the design matrix and moves.
-├── stats_problems.py # Different statistical problems and fibers.
+├── stats_problems.py # Different statistical problems and fibers, in particular there are different problems here for sampling Joint Degree Matrices (JDMs) of graphs with a given curvature and degree sequence.
+├── matrix_utils.py #Several functions to deal with the matrices (in particular JDMs) needed for the problem of sampling JDMs with a given curvature and degree sequence.
+├── functions_algorithm_stanton_pinar_JDM.py # Functions for greedy algorithm to obtain a graph with a specific JDM (Algorithm from Stanton-Pinar, 2011 (Algorithm 1) 
 └── README.md
 ```
 
