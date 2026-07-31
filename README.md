@@ -34,7 +34,6 @@ git clone <repo http>
 ```
   Gaussian A2C Fiber Sampling notebook.ipynb
 ```
-- In this notebook you can define sampling for 4 different problems. For custome problems, you need to define the design matrix $A$, initial solution $x_0$ and margin $Ax = b$. Then extract the lattice basis.
+- In this notebook you can define sampling Joint degree matrices for different discrete curvature and degree sequences related to different graphs. For custome problems, you need to define the design matrix $A$, initial solution $x_0$ and margin $Ax = b$. Then extract the lattice basis.
 - After computing the lattice basis, simply run the trainig cell and the RL will start training.
 - In the end of the notebook, you can load the trained policy, rerun it on the same fiber and compute the random sample from the fiber.
-- Finally, the code computes the emprical chi-square distribution for the given sample.
