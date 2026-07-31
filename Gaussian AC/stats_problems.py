@@ -1,8 +1,8 @@
 import numpy as np
 import re
 from helper_functions import extract_lattice_basis_sparse, convert_sym_to_np
-
-
+import networkx as nx
+import pandas as pd
 
 
 def mc2_matrix_to_np_arr(matrix_text_file):
@@ -114,7 +114,7 @@ def return_stats_problem_3():
     
     initial_states[0] = np.array([42, 55, 22, 3, 72, 82, 60, 12, 90, 106, 85, 25, 27, 48, 47, 8, 8, 18, 19, 5, 1, 2, 8, 19, 1, 2, 15, 33, 2, 5, 25, 83, 2, 2, 10, 45, 0, 0, 12, 19, 0, 0, 1, 19, 0, 0, 3, 60, 0, 0, 5, 86, 0, 0, 2, 36, 0, 0, 1, 14, 172, 151, 107, 42, 208, 198, 206, 92, 279, 271, 331, 191, 99, 126, 179, 97, 36, 35, 99, 79])
 
-    
+
     
     path = 'C:/Users/gvozd/Desktop/University/Research/Code/Combinatorial RL/Fiber Sampling using RL/Deep Fiber Sampling/Actor Critic/Gaussian AC/Real Data/StatsProblem/DobraDesignMat.txt'
     design_mat = mc2_matrix_to_np_arr(path)
@@ -128,6 +128,16 @@ def return_stats_problem_3():
     
     return node_num, initial_states, available_actions, design_mat, margin
 
+    
+    #design_mat = np.array([[1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0],
+    #                   [0,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0],
+    #                   [0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0],
+    #                   [0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1],
+    #                   [1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0],
+    #                   [0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,0],
+    #                   [0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0],
+    #                   [0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1]])
+    
 
 
 
@@ -139,3 +149,350 @@ def return_stats_problem_3():
 
 
 
+#=== Following function computes Joint degree matrix of input graph ===
+from matrix_utils import *
+from functions_algorithm_stanton_pinar_JDM import *
+
+def create_graph1():
+    G = nx.Graph()
+    
+    total_nodes = 7
+    
+    # 1. Add nodes (add_nodes_from requires an iterable like range)
+    # This creates nodes 1, 2, 3, 4, 5, 6, 7
+    G.add_nodes_from(range(1, total_nodes + 1))
+        
+    # 2. Connect nodes in a sequence (1-2, 2-3, etc.)
+    # We use range(1, total_nodes) so that ii+1 doesn't exceed 7
+    for ii in range(1, total_nodes):
+        G.add_edge(ii, ii + 1)
+    
+    # 3. Add your specific manual edges
+    G.add_edge(2, 6)
+    G.add_edge(2, 5)
+
+    return G
+
+# To visualize it:
+ #my_graph = create_graph1()
+ #print(my_graph.edges())
+    
+
+
+
+
+
+
+
+# Sparse table with large entries.
+def return_stats_problem_Curv():
+    
+    node_num = 4
+    #p=0.07 #probability ER model
+    p=0.08
+    s=50   #size ER model
+    G = nx.gnp_random_graph(s, p, seed=31)
+
+    
+    J_matrix= joint_degree_matrix(G).to_numpy()
+
+    print("J matrix")
+    print(J_matrix)
+
+    sum_vec=np.sum(J_matrix, axis=1)+np.diag(J_matrix)
+
+    print("sum vec")
+    print(sum_vec)
+    D_g=np.array([sum_vec[i] // (i+1) for i in range(len(sum_vec))])
+
+    G_raw = construct_graph(J_matrix, D_g)
+
+    
+    n=max(dict(G.degree()).values())
+    print(n)
+
+    
+    #create vector corresponding to ERG random graph JDM
+    final_vec=initialize_vector(G)
+    
+
+    # create initial state vector that corresponds which entries to number of edges with the first vertex of degree a and second vertex of degree b and  slack variables  
+    initial_states = {}
+    initial_states[0] = final_vec
+    
+    
+    # create matrix enforcing degree and curvature frequencies fixed
+    A=curvature_A_matrix(n)
+    # create matrix that is Lawrence lifting of curvature_A_matrix 
+    design_mat=lawrence_lift(A)
+
+
+
+    # take matrix product
+    margin = np.dot(design_mat, initial_states[0])
+    
+    available_actions = extract_lattice_basis_sparse(design_mat) # get the lattice basis out of the design matrix.
+    available_actions = convert_sym_to_np(available_actions) # convert to numpy.
+    
+    return node_num, initial_states, available_actions, design_mat, margin
+
+
+
+
+
+
+
+####################################################
+#####################################################
+#####
+    
+#This initialize the discrete curvature problem for the fiber of an Erdos-Renyi random graph
+
+def return_stats_problem_Curv_ER():
+    
+    node_num = 4
+     
+    #p=0.08 #probability ER model
+    #s=50   #size ER model
+
+    p=0.02
+    s=250
+    G = nx.gnp_random_graph(s, p, seed=31)
+
+    
+    J_matrix= joint_degree_matrix(G).to_numpy()
+
+    print("J matrix")
+    print(J_matrix)
+
+    sum_vec=np.sum(J_matrix, axis=1)+np.diag(J_matrix)
+
+    print("sum vec")
+    print(sum_vec)
+    D_g=np.array([sum_vec[i] // (i+1) for i in range(len(sum_vec))])
+
+    G_raw = construct_graph(J_matrix, D_g)
+
+    
+    n=max(dict(G.degree()).values())
+    print(n)
+
+
+    
+    #create vector corre
+    final_vec=initialize_vector(G)
+    
+
+    # create initial state vector that corresponds which entries to number of edges with the first vertex of degree a and second vertex of degree b and  slack variables  
+    initial_states = {}
+    initial_states[0] = final_vec
+
+    
+    # create matrix enforcing degree and curvature frequencies fixed
+    A=curvature_A_matrix(n)
+    # create matrix that is Lawrence lifting of curvature_A_matrix 
+    design_mat=lawrence_lift(A)
+
+
+    # take matrix product
+    margin = np.dot(design_mat, initial_states[0])
+    
+    available_actions = extract_lattice_basis_sparse(design_mat) # get the lattice basis out of the design matrix.
+    available_actions = convert_sym_to_np(available_actions) # convert to numpy.
+    
+    return node_num, initial_states, available_actions, design_mat, margin
+
+
+
+
+
+
+
+######################################
+######################################
+###### 
+    
+#This initialize the discrete curvature problem for the fiber of the dense JDM with high diagonal entries  generated by generate_jdm_15()
+    
+def return_stats_problem_Curv_Dense():
+    
+    node_num = 4
+    
+    J_matrix = generate_jdm_15()
+    
+
+    print("J matrix")
+    print(J_matrix)
+
+    sum_vec=np.sum(J_matrix, axis=1)+np.diag(J_matrix)
+
+    print("sum vec")
+    print(sum_vec)
+    D_g=np.array([sum_vec[i] // (i+1) for i in range(len(sum_vec))])
+
+    G_raw = construct_graph(J_matrix, D_g)
+
+    # Convert to NetworkX to use its analysis tools
+
+    G = nx.Graph(G_raw)
+
+    
+    
+    n=max(dict(G.degree()).values())
+    print(n)
+
+   
+
+    
+    
+    #create vector corresponding to graph degree and curvature sequence
+    final_vec=initialize_vector(G)
+    
+    initial_states = {}
+    initial_states[0] = final_vec
+    
+    
+    # create matrix enforcing degree and curvature frequencies fixed
+    A=curvature_A_matrix(n)
+    # create matrix that is Lawrence lifting of curvature_A_matrix 
+    design_mat=lawrence_lift(A)
+
+
+
+
+    # take matrix product
+    margin = np.dot(design_mat, initial_states[0])
+    
+    available_actions = extract_lattice_basis_sparse(design_mat) # get the lattice basis out of the design matrix.
+    available_actions = convert_sym_to_np(available_actions) # convert to numpy.
+    
+    return node_num, initial_states, available_actions, design_mat, margin
+
+
+
+
+
+
+###############################
+####################################################
+#####################################################
+#####
+
+#This initialize the discrete curvature problem for the fiber of the karate club graph
+
+
+def return_stats_problem_Curv_BA():
+    
+    node_num = 4
+     
+    s = 30  # Total number of nodes
+    m = 5    # Number of edges to attach from a new node to existing nodes
+
+# 2. Generate the Barabási-Albert graph
+    G = nx.barabasi_albert_graph(s, m, seed=31)
+    
+
+    #create JDM corresponding to Barabási-Albert graph
+    J_matrix= joint_degree_matrix(G).to_numpy()
+
+    print("J matrix")
+    print(J_matrix)
+
+    sum_vec=np.sum(J_matrix, axis=1)+np.diag(J_matrix)
+
+    print("sum vec")
+    print(sum_vec)
+    D_g=np.array([sum_vec[i] // (i+1) for i in range(len(sum_vec))])
+
+    G_raw = construct_graph(J_matrix, D_g)
+
+    
+    n=max(dict(G.degree()).values())
+    print(n)
+
+   
+
+     #create vector corre
+    final_vec=initialize_vector(G)
+   
+
+    # create initial state vector that corresponds which entries to number of edges with the first vertex of degree a and second vertex of degree b and slack variables  
+    initial_states = {}
+    initial_states[0] = final_vec
+    #np.array([0,0,1,1,1,1,1,1,2,0,1,4,3, 1, 0, 3, 1, 0,0,0])
+    #initial_states[0] = np.array([1, 1, 0, 0, 0, 1, 1 , 0, 0, 0, 1, 1, 1, 0, 0, 1])
+    
+    # create matrix enforcing degree and curvature frequencies fixed
+    A=curvature_A_matrix(n)
+    # create matrix that is Lawrence lifting of curvature_A_matrix 
+    design_mat=lawrence_lift(A)
+
+
+
+    # take matrix product
+    margin = np.dot(design_mat, initial_states[0])
+    
+    available_actions = extract_lattice_basis_sparse(design_mat) # get the lattice basis out of the design matrix.
+    available_actions = convert_sym_to_np(available_actions) # convert to numpy.
+    
+    return node_num, initial_states, available_actions, design_mat, margin
+
+
+
+
+
+###############################
+####################################################
+#####################################################
+##### 
+    
+#This initialize the discrete curvature problem for the fiber of a Barabasi-Albert random graph
+
+def return_stats_problem_Curv_karate():
+    
+    node_num = 4
+    
+
+# Generate the Kareate club network
+    G = nx.karate_club_graph()
+    
+#create JDM corresponding to karate club graph
+    J_matrix= joint_degree_matrix(G).to_numpy()
+
+    print("J matrix")
+    print(J_matrix)
+
+    sum_vec=np.sum(J_matrix, axis=1)+np.diag(J_matrix)
+
+    print("sum vec")
+    print(sum_vec)
+    D_g=np.array([sum_vec[i] // (i+1) for i in range(len(sum_vec))])
+
+    G_raw = construct_graph(J_matrix, D_g)
+
+   
+    n=max(dict(G.degree()).values())
+    print(n)
+
+
+    
+    
+    #create vector corre
+    final_vec=initialize_vector(G)
+    
+    initial_states = {}
+    initial_states[0] = final_vec
+    
+    # create matrix enforcing degree and curvature frequencies fixed
+    A=curvature_A_matrix(n)
+    # create matrix that is Lawrence lifting of curvature_A_matrix 
+    design_mat=lawrence_lift(A)
+
+
+    # take matrix product
+    margin = np.dot(design_mat, initial_states[0])
+    
+    available_actions = extract_lattice_basis_sparse(design_mat) # get the lattice basis out of the design matrix.
+    available_actions = convert_sym_to_np(available_actions) # convert to numpy.
+    
+    return node_num, initial_states, available_actions, design_mat, margin
