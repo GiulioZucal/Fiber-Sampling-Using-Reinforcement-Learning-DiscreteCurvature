@@ -1,6 +1,6 @@
 ## Fiber-Sampling-Using-Reinforcement-Learning for sampling Joint Degree matrices with fixed Forman-Ricci curvature and degree sequence
 
-The code in this repo is for the paper: "Markov and lattice bases for Forman-Ricci curvature of graphs" (https://arxiv.org/...................)
+The code in this repo is for the paper: "Markov and lattice bases for Forman-Ricci curvature of graphs" (https://arxiv.org/pdf/2608.01929)
 and it is based on the code for the paper "Learning to sample fibers for goodness-of-fit testing". (https://arxiv.org/abs/2405.13950)
 
 ---
